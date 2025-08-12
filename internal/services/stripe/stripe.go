@@ -9,7 +9,6 @@ import (
 	"github.com/guregu/null"
 	"github.com/stripe/stripe-go/v75"
 
-	//"github.com/stripe/stripe-go/v75/bankaccount"
 	"github.com/stripe/stripe-go/v75/charge"
 	"github.com/stripe/stripe-go/v75/customer"
 	"github.com/stripe/stripe-go/v75/paymentmethod"
@@ -28,13 +27,10 @@ type StripeConfig struct {
 
 type StripeService interface {
 	CreateStripeCustomer(input *CreateStripeCustomerInput) (*domain.StripeCustomer, error)
-	// CreateStripeBankAccount(cust *stripe.Customer, bankAccountToken *string) (*stripe.BankAccount, error)
 	CreatePaymentMethodFromBankToken(ctx context.Context, customerID string, processorToken string) (*domain.PaymentMethod, error)
 	GetCustomerPaymentMethods(ctx context.Context, customerID string, paymentType string) ([]*stripe.PaymentMethod, error)
 	UpdateDefaultStripePaymentMethod(ctx context.Context, input *UpdateDefaultStripePaymentMethodInput) error
-	//DeleteStripeBankAccount(input *DeleteStripeBankAccountInput) (*stripe.BankAccount, error)
 	DeleteStripePaymentMethod(ctx context.Context, paymentMethodID string) error
-	//UpdateDefaultStripeBankAccount(ctx context.Context, input *UpdateDefaultStripeBankAccountInput) error
 	CreateACHCharge(ctx context.Context, input *CreateACHChargeInput) (*ACHCharge, error)
 	RetrieveStripeToken(ctx context.Context, tokenID string) (*stripe.Token, error)
 	RetrievePaymentMethod(ctx context.Context, paymentMethodID string) (*domain.PaymentMethod, error)
@@ -59,18 +55,6 @@ type UpdateDefaultStripePaymentMethodInput struct {
 	CustomerID      string `json:"customer_id"`
 	PaymentMethodID string `json:"payment_method_id"`
 }
-
-// type UpdateDefaultStripeBankAccountInput struct {
-// 	CustomerID    string `json:"CustomerID"`
-// 	BankAccountID string `json:"BankAccountID"`
-// 	IsDefault     bool   `json:"IsDefault"`
-// }
-
-// type DeleteStripeBankAccountInput struct {
-// 	CustomerID       string `json:"CustomerID"`
-// 	BankAccountID    string `json:"BankAccountID"`
-// 	BankAccountToken string `json:"BankAccountToken"`
-// }
 
 type CreateACHChargeInput struct {
 	CustomerID     string `json:"CustomerID"`
@@ -105,26 +89,6 @@ func (s *stripeImpl) CreateStripeCustomer(input *CreateStripeCustomerInput) (*do
 		Email:            null.NewString(stripeCustomer.Email, stripeCustomer.Email != ""),
 	}, nil
 }
-
-/*
-Attach the bank account information obtained from Plaid (as a bank account token)
-to the Stripe customer. This is a necessary step because it links the user's bank account
-information to their Stripe customer profile, enabling to use it for future transactions.
-*/
-// func (s *stripeImpl) CreateStripeBankAccount(cust *stripe.Customer, bankAccountToken *string) (*stripe.BankAccount, error) {
-// 	stripe.Key = s.Config.AppKey
-
-// 	bankAccountParams := &stripe.BankAccountParams{
-// 		Token:    bankAccountToken,
-// 		Customer: &cust.ID,
-// 	}
-
-// 	bankAccount, err := bankaccount.New(bankAccountParams)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return bankAccount, nil
-// }
 
 // CreatePaymentMethodFromBankToken creates a PaymentMethod from a Plaid processor_token (btok_...)
 func (s *stripeImpl) CreatePaymentMethodFromBankToken(ctx context.Context, customerID string, processorToken string) (*domain.PaymentMethod, error) {
@@ -175,23 +139,6 @@ func (s *stripeImpl) GetCustomerPaymentMethods(ctx context.Context, customerID s
 	return result, nil
 }
 
-// func (s *stripeImpl) UpdateDefaultStripeBankAccount(ctx context.Context, input *UpdateDefaultStripeBankAccountInput) error {
-// 	stripe.Key = s.Config.AppKey
-
-// 	customerParams := &stripe.CustomerParams{
-// 		DefaultSource: stripe.String(input.BankAccountID),
-// 		Params: stripe.Params{
-// 			Context: ctx,
-// 		},
-// 	}
-// 	_, err := customer.Update(input.CustomerID, customerParams)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return err
-// }
-
 func (s *stripeImpl) UpdateDefaultStripePaymentMethod(ctx context.Context, input *UpdateDefaultStripePaymentMethodInput) error {
 	stripe.Key = s.Config.AppKey
 
@@ -209,21 +156,6 @@ func (s *stripeImpl) UpdateDefaultStripePaymentMethod(ctx context.Context, input
 
 	return nil
 }
-
-// func (s *stripeImpl) DeleteStripeBankAccount(input *DeleteStripeBankAccountInput) (*stripe.BankAccount, error) {
-// 	stripe.Key = s.Config.AppKey
-
-// 	bankAccountParams := &stripe.BankAccountParams{
-// 		Customer: &input.CustomerID,
-// 	}
-// 	bankAccountParams.SetIdempotencyKey(fmt.Sprintf("%s-%s", input.CustomerID, input.BankAccountID))
-
-// 	bankAccount, err := bankaccount.Del(input.BankAccountID, bankAccountParams)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return bankAccount, nil
-// }
 
 func (s *stripeImpl) DeleteStripePaymentMethod(ctx context.Context, paymentMethodID string) error {
 	stripe.Key = s.Config.AppKey

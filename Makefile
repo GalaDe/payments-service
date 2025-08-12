@@ -1,61 +1,71 @@
+# ---- Config ----
+APP_NAME := payments-service
+API_CMD  := cmd/api/main.go
+WORKER_CMD := cmd/worker/main.go
+
+# If your docker compose file has another name, override with: make dc="docker compose -f path.yml" <target>
+dc ?= docker compose
+
+# ---- Help ----
 .PHONY: help
-help:
-	@echo 'Usage: make [target] ...'
+help: ## Show this help
+	@echo 'Usage: make <target>'
 	@echo ''
-	@echo 'Targets:'
-	@fgrep -h '#!' $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e "s/:.*#!/:/" | column -t -s":"
-	@grep '^.PHONY: .* #' Makefile | sed 's/\.PHONY: \(.*\) # \(.*\)/\1:\t\2/' | column -t -s":"
+	@grep -E '^[a-zA-Z0-9_\-]+:.*?## ' $(MAKEFILE_LIST) | sed 's/:.*##/: /' | column -t -s': '
 
-.PHONY: clean # remove dist outfile
-clean:
-	rm -rf ${OUTFILE}
-
-PHONY: tidy # go mod tidy
-tidy:
+# ---- Go basics ----
+.PHONY: tidy
+tidy: ## go mod tidy
 	go mod tidy
 
-.PHONY: check_fmt # gofmt & test
-check_fmt:
-	./scripts/check_fmt.sh
+.PHONY: fmt
+fmt: ## go fmt
+	go fmt ./...
 
-.PHONY: test # unit test
-test:
-	@./scripts/unit_test.sh
+.PHONY: vet
+vet: ## go vet
+	go vet ./...
 
-.PHONY: show_test_coverage # unit test coverage
-show_test_coverage:
-	@./scripts/show_coverage.sh
+.PHONY: test
+test: ## run unit tests
+	go test ./... -count=1
 
-.PHONY: sqlc # run sqlc generate
-sqlc:
+.PHONY: check
+check: tidy fmt vet test ## run tidy, fmt, vet, test
+
+# ---- sqlc ----
+.PHONY: sqlc
+sqlc: ## generate sqlc code
 	sqlc generate
 
-.PHONY: mockery # run mockery
-mockery:
-	mockery
+# ---- Run services ----
+.PHONY: run-api
+run-api: ## run HTTP API locally
+	go run $(API_CMD)
 
-.PHONY: check # clean tidy check_fmt test workflowcheck
-check: clean tidy check_fmt test workflowcheck
+.PHONY: run-worker
+run-worker: ## run Temporal worker locally
+	go run $(WORKER_CMD)
 
-.PHONY: openapi_http # generate OpenAPI bindings
-openapi_http:
-	@./scripts/openapi-http.sh auth internal/auth/ports ports
-	@./scripts/openapi-http.sh sales internal/sales/ports ports
-	@./scripts/openapi-http.sh servicing internal/servicing/ports/http/dce dce
-	@./scripts/openapi-http.sh backoffice internal/servicing/ports/http/backoffice backoffice
+# ---- Docker / infra (optional) ----
+.PHONY: up
+up: ## start docker-compose stack (db, temporal, etc.)
+	$(dc) up -d
 
-.PHONY: temporal # start temporal server
-temporal:
-	@./scripts/temporal.sh
+.PHONY: down
+down: ## stop docker-compose stack
+	$(dc) down
 
-.PHONY: temporal-send # start a test temporal workflow
-temporal-send:
-	temporal workflow start --type InstallSoloSaverPlan --run-timeout 600 --task-queue default-task-queue -i '3'
+.PHONY: logs
+logs: ## tail compose logs
+	$(dc) logs -f
 
-.PHONY: tools # generate tools
-tools:
-	@./scripts/tools.sh
+# ---- Temporal helpers (optional) ----
+.PHONY: temporal-ns
+temporal-ns: ## list Temporal namespaces (requires temporal CLI)
+	temporal --address localhost:7233 namespace list
 
-.PHONY: workflowcheck # run temporal workflow check
-workflowcheck:
-	workflowcheck -config workflowcheck.config.yaml -show-pos ./...
+# ---- Cleaning ----
+.PHONY: clean
+clean: ## no-op clean placeholder (add build artifacts if any)
+	@echo "Nothing to clean."
