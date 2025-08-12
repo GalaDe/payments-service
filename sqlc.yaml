@@ -1,0 +1,18 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries:
+      - "sql/query/plaid_tokens.sql"
+      - "sql/query/stripe_customers.sql"
+      - "sql/query/payments.sql"
+    schema: "sql/schema.sql"
+    gen:
+      go:
+        sql_package: "pgx/v4"
+        package: "orm"
+        out: "internal/sqlc"
+        emit_db_tags: true
+        emit_json_tags: true
+        emit_result_struct_pointers: true
+        json_tags_case_style: "pascal"
+        emit_interface: true

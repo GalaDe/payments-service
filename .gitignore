@@ -1,0 +1,16 @@
+cat <<EOF > .gitignore
+# Binaries
+/payments-service
+*.exe
+*.out
+*.test
+
+# Vendor
+/vendor/
+
+# Env files
+.env
+EOF
+
+# Notes
+NOTES.md

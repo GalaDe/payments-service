@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  temporal:
+    image: temporalio/auto-setup:1.25
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=temporal-postgres
+    ports:
+      - "7233:7233"  # gRPC API
+      - "8233:8233"  # UI
+    depends_on:
+      - temporal-postgres
+
+  temporal-postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=temporal
+      - POSTGRES_PASSWORD=temporal
+    ports:
+      - "5434:5432"
