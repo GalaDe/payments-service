@@ -39,9 +39,17 @@ type CreatePaymentRequest struct {
 	Description     string `json:"description"`
 }
 
-/*
-POST /payments
-*/
+// CreatePayment godoc
+// @Summary      Start a payment workflow
+// @Description  Starts a Temporal workflow to process an ACH payment using the provided Stripe customer + payment method.
+// @Tags         payments
+// @Accept       json
+// @Produce      json
+// @Param        request  body  CreatePaymentRequest  true  "Payment request"
+// @Success      200  {object}  map[string]string  "workflow_id, run_id, status"
+// @Failure      400  {string}  string  "Invalid request payload / Missing or invalid fields"
+// @Failure      500  {string}  string  "Failed to start payment workflow"
+// @Router       /payments [post]
 func (h *HttpServer) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req CreatePaymentRequest
@@ -89,10 +97,17 @@ func (h *HttpServer) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-/*
-	GET  /payments/{id}
-*/
-
+// GetPaymentByID godoc
+// @Summary      Get payment by ID
+// @Description  Returns a single payment record by its ID
+// @Tags         payments
+// @Produce      json
+// @Param        id   path      string  true  "Payment ID"
+// @Success      200  {object}  domain.Payment
+// @Failure      400  {string}  string "Missing payment ID"
+// @Failure      404  {string}  string "Payment not found"
+// @Failure      500  {string}  string "Failed to fetch payment"
+// @Router       /payments/{id} [get]
 func (h *HttpServer) GetPaymentByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	paymentID := mux.Vars(r)["id"]
@@ -115,9 +130,14 @@ func (h *HttpServer) GetPaymentByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(payment)
 }
 
-/*
-	GET  /payments
-*/
+// GetPayments godoc
+// @Summary      List all payments
+// @Description  Returns all payment records for debugging/admin purposes
+// @Tags         payments
+// @Produce      json
+// @Success      200  {array}   domain.Payment
+// @Failure      500  {string}  string "Failed to retrieve payments / encode response"
+// @Router       /payments [get]
 func (h *HttpServer) GetPayments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

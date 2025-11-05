@@ -20,10 +20,18 @@ type CreatePaymentMethodRequest struct {
 	CustomerID     string `json:"customer_id"`
 }
 
-/*
-	POST /stripe/payment-method
-*/
 
+// CreateStripePaymentMethod godoc
+// @Summary      Create Stripe payment method
+// @Description  Creates a Stripe payment method from a Plaid processor token and attaches it to a Stripe customer
+// @Tags         stripe
+// @Accept       json
+// @Produce      json
+// @Param        request  body      CreatePaymentMethodRequest  true  "Customer ID and Processor Token"
+// @Success      200      {object}  stripe.PaymentMethod
+// @Failure      400      {string}  string  "Invalid request body"
+// @Failure      500      {string}  string  "Stripe payment method creation failed"
+// @Router       /stripe/payment-methods [post]
 func (h *HttpServer) CreateStripePaymentMethod(w http.ResponseWriter, r *http.Request) {
 	var req CreatePaymentMethodRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.ProcessorToken == "" || req.CustomerID == "" {
@@ -41,10 +49,16 @@ func (h *HttpServer) CreateStripePaymentMethod(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(pm)
 }
 
-/*
-	GET  /stripe/payment-methods
-*/
-
+// GetStripePaymentMethod godoc
+// @Summary      List Stripe payment methods
+// @Description  Retrieves Stripe payment methods for a given customer ID, filtered by type (e.g., us_bank_account)
+// @Tags         stripe
+// @Produce      json
+// @Param        customer_id  query     string  true   "Stripe Customer ID"
+// @Success      200          {array}   stripe.PaymentMethod
+// @Failure      400          {string}  string  "Missing required query parameter: customer_id"
+// @Failure      500          {string}  string  "Failed to retrieve payment methods"
+// @Router       /stripe/payment-methods [get]
 func (h *HttpServer) GetStripePaymentMethod(w http.ResponseWriter, r *http.Request) {
 	customerID := r.URL.Query().Get("customer_id")
 	if customerID == "" {
@@ -64,10 +78,16 @@ func (h *HttpServer) GetStripePaymentMethod(w http.ResponseWriter, r *http.Reque
 
 }
 
-/*
-	DELETE /stripe/payment-method/{id}
-*/
-
+// DeleteStripePaymentMethod godoc
+// @Summary      Delete Stripe payment method
+// @Description  Deletes a Stripe payment method by its ID
+// @Tags         stripe
+// @Produce      json
+// @Param        payment_method_id  path      string  true  "Stripe Payment Method ID"
+// @Success      204  "No Content"
+// @Failure      400  {string}  string  "Missing payment_method_id"
+// @Failure      500  {string}  string  "Failed to delete Stripe payment method"
+// @Router       /stripe/payment-methods/{payment_method_id} [delete]
 func (h *HttpServer) DeleteStripePaymentMethod(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	paymentMethodID := mux.Vars(r)["payment_method_id"]
