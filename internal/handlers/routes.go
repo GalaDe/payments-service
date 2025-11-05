@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func RegisterRoutes(h *HttpServer) *chi.Mux {
@@ -34,6 +35,9 @@ func RegisterRoutes(h *HttpServer) *chi.Mux {
 	// Webhooks
 	r.Post("/webhook/plaid", h.PlaidWebhook)
 	r.Post("/webhook/stripe", h.StripeWebhook)
+
+	// Swagger docs route
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	return r
 }

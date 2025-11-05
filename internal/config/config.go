@@ -25,7 +25,7 @@ func Load() (*Config, error) {
 	_ = godotenv.Load()
 
 	cfg := &Config{
-		Port:             getEnv("PORT", "8080"),
+		Port:             getEnv("PORT", "9191"),
 		DatabaseURL:      mustEnv("DATABASE_URL"),
 		StripeAPIKey:     mustEnv("STRIPE_API_KEY"),
 		PlaidClientID:    mustEnv("PLAID_CLIENT_ID"),

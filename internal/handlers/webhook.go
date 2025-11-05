@@ -18,6 +18,16 @@ import (
 
 */
 
+// PlaidWebhook godoc
+// @Summary      Plaid webhook receiver
+// @Description  Receives Plaid webhook events (e.g., TRANSACTIONS_UPDATED) and triggers internal updates
+// @Tags         webhooks
+// @Accept       json
+// @Produce      json
+// @Param        payload  body   object  true  "Plaid webhook payload"
+// @Success      200
+// @Failure      400  {string}  string  "Invalid Plaid webhook payload"
+// @Router       /webhook/plaid [post]
 func (h *HttpServer) PlaidWebhook(w http.ResponseWriter, r *http.Request) {
 	var webhookEvent map[string]interface{}
 
@@ -35,6 +45,18 @@ func (h *HttpServer) PlaidWebhook(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// StripeWebhook godoc
+// @Summary      Stripe webhook receiver
+// @Description  Receives Stripe webhook events (e.g., charge.succeeded/failed) and updates payment status
+// @Tags         webhooks
+// @Accept       json
+// @Produce      json
+// @Param        Stripe-Signature  header  string  false  "Stripe signature header for webhook verification"
+// @Param        payload           body    object  true   "Stripe event payload"
+// @Success      200
+// @Failure      400  {string}  string  "Invalid Stripe webhook payload"
+// @Failure      503  {string}  string  "Error reading webhook request"
+// @Router       /webhook/stripe [post]
 func (h *HttpServer) StripeWebhook(w http.ResponseWriter, r *http.Request) {
 	const MaxBodyBytes = int64(65536)
 	r.Body = http.MaxBytesReader(w, r.Body, MaxBodyBytes)

@@ -1,13 +1,16 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/cors"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
+	_ "github.com/GalaDe/payments-service/internal/docs"
+
 	"go.temporal.io/sdk/client"
 	"go.uber.org/zap"
 
@@ -22,6 +25,12 @@ import (
 	repository "github.com/GalaDe/payments-service/internal/storage/postgres"
 )
 
+// @title           Payments Service API
+// @version         1.0
+// @description     API for ACH payments with Plaid + Stripe orchestrated via Temporal.
+// @BasePath        /
+// @schemes         http
+// @host            localhost:9191
 func main() {
 
 	// Load configuration (e.g. from env or file)
@@ -79,7 +88,7 @@ func main() {
 	// HTTP router
 	r := chi.NewRouter()
 
-	// (optional) CORS
+	// CORS
 	corsMiddleware := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"}, // Change for production
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
@@ -92,21 +101,22 @@ func main() {
 		w.Write([]byte("✅ Go backend is up!"))
 	})
 
+	// Swagger UI
+	r.Get("/swagger/*", httpSwagger.WrapHandler)
+
 	// Register your routes
 	r = handler.RegisterRoutes(httpHandler)
-	http.ListenAndServe(":8081", r)
 
-	// Start server
-	port := cfg.Port
-	fmt.Printf("🚀 Listening on :%s...\n", port)
+	// Server start
+	addr := ":" + cfg.Port
+	log.Printf("🚀 Listening on %s", addr)
 	srv := &http.Server{
-		Addr:         ":" + port,
+		Addr:         addr,
 		Handler:      r,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 	}
-
-	if err := srv.ListenAndServe(); err != nil {
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("HTTP server failed: %v", err)
 	}
 }
