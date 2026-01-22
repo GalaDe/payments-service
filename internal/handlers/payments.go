@@ -82,7 +82,7 @@ func (h *HttpServer) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	we, err := h.worker.ExecuteWorkflow(ctx, workflowOptions, workflow.PaymentWorkflow, workflowInput)
-	if err != nil {
+	if err != nil { 
 		log.Printf("Failed to start payment workflow: %v", err)
 		http.Error(w, "Failed to start payment workflow: "+err.Error(), http.StatusInternalServerError)
 		return
