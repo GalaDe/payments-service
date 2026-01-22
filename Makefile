@@ -69,3 +69,8 @@ temporal-ns: ## list Temporal namespaces (requires temporal CLI)
 .PHONY: clean
 clean: ## no-op clean placeholder (add build artifacts if any)
 	@echo "Nothing to clean."
+
+# ---- Run Mockery ----
+.PHONY: mockery
+mockery:
+	mockery

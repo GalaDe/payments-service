@@ -1,0 +1,40 @@
+quiet: False
+disable-version-string: True
+with-expecter: True
+include-auto-generated: False
+outpkg: "mock{{firstUpper .PackageName}}"
+replace-type:
+  - go.temporal.io/sdk/internal.Context=workflow:go.temporal.io/sdk/workflow.Context
+  - go.temporal.io/sdk/internal.CheckHealthRequest=workflow:go.temporal.io/sdk/client.CheckHealthRequest
+  - go.temporal.io/sdk/internal.CheckHealthResponse=workflow:go.temporal.io/sdk/client.CheckHealthResponse
+  - go.temporal.io/sdk/internal.CheckHealthResponse=client:go.temporal.io/sdk/client.CheckHealthResponse
+  - go.temporal.io/sdk/internal.GetWorkerBuildIdCompatibilityOptions=client:go.temporal.io/sdk/client.GetWorkerBuildIdCompatibilityOptions
+  - go.temporal.io/sdk/internal.GetWorkerTaskReachabilityOptions=client:go.temporal.io/sdk/client.GetWorkerTaskReachabilityOptions
+  - go.temporal.io/sdk/internal.GetWorkflowUpdateHandleOptions=client:go.temporal.io/sdk/client.GetWorkflowUpdateHandleOptions
+  - go.temporal.io/sdk/internal.HistoryEventIterator=client:go.temporal.io/sdk/client.HistoryEventIterator
+  - go.temporal.io/sdk/internal.QueryWorkflowWithOptionsRequest=client:go.temporal.io/sdk/client.QueryWorkflowWithOptionsRequest
+  - go.temporal.io/sdk/internal.QueryWorkflowWithOptionsResponse=client:go.temporal.io/sdk/client.QueryWorkflowWithOptionsResponse
+  - go.temporal.io/sdk/internal.ScheduleClient=client:go.temporal.io/sdk/client.ScheduleClient
+  - go.temporal.io/sdk/internal.StartWorkflowOptions=client:go.temporal.io/sdk/client.StartWorkflowOptions
+  - go.temporal.io/sdk/internal.UpdateWorkerBuildIdCompatibilityOptions=client:go.temporal.io/sdk/client.UpdateWorkerBuildIdCompatibilityOptions
+  - go.temporal.io/sdk/internal.UpdateWorkflowWithOptionsRequest=client:go.temporal.io/sdk/client.UpdateWorkflowWithOptionsRequest
+  - go.temporal.io/sdk/internal.WorkerBuildIDVersionSets=client:go.temporal.io/sdk/client.WorkerBuildIDVersionSets
+  - go.temporal.io/sdk/internal.WorkerTaskReachability=client:go.temporal.io/sdk/client.WorkerTaskReachability
+  - go.temporal.io/sdk/internal.WorkflowRun=client:go.temporal.io/sdk/client.WorkflowRun
+  - go.temporal.io/sdk/internal.WorkflowUpdateHandle=client:go.temporal.io/sdk/client.WorkflowUpdateHandle
+packages:
+  ./internal:
+    config:
+      recursive: True
+      include-regex: "^[A-Z].*$"
+      dir: 'internal/mocks/{{ trimPrefix .InterfaceDirRelative "internal/" }}'
+  ./pkg:
+    config:
+      recursive: True
+      all: True
+      dir: "{{.InterfaceDir}}/mock"
+  go.temporal.io/sdk/client:
+    config:
+      dir: "internal/mocks/temporal/client"
+    interfaces:
+      Client:
